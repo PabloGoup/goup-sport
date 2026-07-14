@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "defaultWindowDays": 7,
+  "maxWindowDays": 7,
+  "defaultTtlHours": 24,
+  "sources": [
+    {
+      "key": "conmebol-libertadores",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Copa Libertadores",
+      "country": "South America",
+      "apiFootballLeagueId": 13,
+      "season": 2026,
+      "priority": 1,
+      "notes": "Operational cache target. If free plan blocks season 2026, switch season after provider verification."
+    },
+    {
+      "key": "conmebol-sudamericana",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Copa Sudamericana",
+      "country": "South America",
+      "apiFootballLeagueId": 11,
+      "season": 2026,
+      "priority": 1,
+      "notes": "Operational cache target. If free plan blocks season 2026, switch season after provider verification."
+    },
+    {
+      "key": "brazil-serie-a",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Brasileirao Serie A",
+      "country": "Brazil",
+      "apiFootballLeagueId": 71,
+      "season": 2026,
+      "priority": 1,
+      "notes": "Primary Brazil league target."
+    },
+    {
+      "key": "argentina-liga-profesional",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Liga Profesional Argentina",
+      "country": "Argentina",
+      "apiFootballLeagueId": 128,
+      "season": 2026,
+      "priority": 1,
+      "notes": "Primary Argentina league target."
+    },
+    {
+      "key": "chile-primera-division",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Primera Division Chile",
+      "country": "Chile",
+      "apiFootballLeagueId": 265,
+      "season": 2026,
+      "priority": 1,
+      "notes": "Primary Chile league target."
+    },
+    {
+      "key": "colombia-primera-a",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Primera A Colombia",
+      "country": "Colombia",
+      "apiFootballLeagueId": 239,
+      "season": 2026,
+      "priority": 2,
+      "notes": "Primary Colombia league target."
+    },
+    {
+      "key": "uruguay-primera-division",
+      "enabled": true,
+      "tier": "south-america-core",
+      "league": "Primera Division Uruguay",
+      "country": "Uruguay",
+      "apiFootballLeagueId": 268,
+      "season": 2026,
+      "priority": 2,
+      "notes": "Primary Uruguay league target."
+    }
+  ]
+}

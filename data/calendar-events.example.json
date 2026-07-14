@@ -1,0 +1,90 @@
+{
+  "provider": "GOUP Calendar",
+  "sourceId": "goup-calendar-example",
+  "collectedAt": "2026-07-13T20:00:00-04:00",
+  "events": [
+    {
+      "id": "calendar-football-worldcup-2026-france-spain",
+      "sport": "football",
+      "league": "World Cup",
+      "leagueId": "fifa-world-cup-2026",
+      "country": "World",
+      "season": 2026,
+      "round": "Semifinal",
+      "startsAt": "2026-07-14T15:00:00-04:00",
+      "status": "upcoming",
+      "statusLabel": "Programado",
+      "venue": "Cancha neutral",
+      "home": {
+        "id": "team-france",
+        "name": "France",
+        "shortName": "FRA",
+        "country": "France"
+      },
+      "away": {
+        "id": "team-spain",
+        "name": "Spain",
+        "shortName": "ESP",
+        "country": "Spain"
+      },
+      "metadata": {
+        "sourceNote": "Fixture de calendario interno. Reemplazar por fuente oficial autorizada cuando corresponda."
+      }
+    },
+    {
+      "id": "calendar-football-worldcup-2026-england-argentina",
+      "sport": "football",
+      "league": "World Cup",
+      "leagueId": "fifa-world-cup-2026",
+      "country": "World",
+      "season": 2026,
+      "round": "Semifinal",
+      "startsAt": "2026-07-15T15:00:00-04:00",
+      "status": "upcoming",
+      "statusLabel": "Programado",
+      "venue": "Cancha neutral",
+      "home": {
+        "id": "team-england",
+        "name": "England",
+        "shortName": "ENG",
+        "country": "England"
+      },
+      "away": {
+        "id": "team-argentina",
+        "name": "Argentina",
+        "shortName": "ARG",
+        "country": "Argentina"
+      },
+      "metadata": {
+        "sourceNote": "Fixture de calendario interno. Reemplazar por fuente oficial autorizada cuando corresponda."
+      }
+    },
+    {
+      "id": "calendar-tennis-bastad-srcina-dimitrov",
+      "sport": "tennis",
+      "league": "ATP Bastad",
+      "leagueId": "atp-bastad-2026",
+      "country": "Sweden",
+      "season": 2026,
+      "round": "Round of 32",
+      "startsAt": "2026-07-14T06:10:00-04:00",
+      "status": "upcoming",
+      "statusLabel": "Programado",
+      "venue": "Centre Court",
+      "home": {
+        "id": "player-dalibor-srcina",
+        "name": "Dalibor Svrcina",
+        "shortName": "SVR",
+        "country": "Czech Republic",
+        "type": "player"
+      },
+      "away": {
+        "id": "player-grigor-dimitrov",
+        "name": "Grigor Dimitrov",
+        "shortName": "DIM",
+        "country": "Bulgaria",
+        "type": "player"
+      }
+    }
+  ]
+}

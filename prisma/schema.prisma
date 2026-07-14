@@ -1,0 +1,356 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SportCode {
+  football
+  basketball
+  tennis
+}
+
+enum EventStatus {
+  live
+  today
+  upcoming
+  completed
+  postponed
+}
+
+enum ParticipantType {
+  team
+  player
+}
+
+enum PredictionFactorDirection {
+  positive
+  negative
+  neutral
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  STALE
+  SKIPPED
+}
+
+enum AnalysisType {
+  STATISTICAL
+  EXPERIMENTAL_AI
+  HYBRID
+}
+
+model Sport {
+  id        String      @id
+  code      SportCode   @unique
+  name      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  leagues   League[]
+  participants Participant[]
+  events    Event[]
+  news      NewsItem[]
+  teamAggregateMetrics TeamAggregateMetric[]
+}
+
+model League {
+  id        String   @id
+  name      String
+  country   String?
+  externalId String?
+  season    Int?
+  logoUrl   String?
+  sportId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sport     Sport    @relation(fields: [sportId], references: [id])
+  events    Event[]
+
+  @@index([sportId])
+}
+
+model Participant {
+  id           String          @id
+  type         ParticipantType
+  name         String
+  shortName    String
+  slug         String          @unique
+  sportId      String
+  country      String?
+  logoUrl      String?
+  position     String?
+  age          Int?
+  nationality  String?
+  recentForm   String[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  sport        Sport           @relation(fields: [sportId], references: [id])
+  homeEvents   Event[]         @relation("HomeParticipant")
+  awayEvents   Event[]         @relation("AwayParticipant")
+  teamMatchMetrics TeamMatchMetric[]
+  teamAggregateMetrics TeamAggregateMetric[]
+
+  @@index([sportId])
+  @@index([type])
+}
+
+model DataSource {
+  id                String   @id
+  provider          String
+  collectedAt       DateTime
+  normalizedVersion String
+  rawPayload         Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  events            Event[]
+  predictions       Prediction[]
+}
+
+model ModelVersion {
+  id          String       @id
+  name        String
+  version     String
+  sportId     String?
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  predictions Prediction[]
+}
+
+model Event {
+  id            String       @id
+  externalId    String?
+  sportId       String
+  leagueId      String
+  startsAt      DateTime
+  status        EventStatus
+  statusLabel   String?
+  round         String?
+  season        Int?
+  homeId        String
+  awayId        String
+  venue         String
+  confidence    Int
+  rawPayload    Json?
+  dataSourceId  String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  sport         Sport        @relation(fields: [sportId], references: [id])
+  league        League       @relation(fields: [leagueId], references: [id])
+  home          Participant  @relation("HomeParticipant", fields: [homeId], references: [id])
+  away          Participant  @relation("AwayParticipant", fields: [awayId], references: [id])
+  dataSource    DataSource   @relation(fields: [dataSourceId], references: [id])
+  predictions   Prediction[]
+  teamMatchMetrics TeamMatchMetric[]
+  analyses      EventAnalysis[]
+
+  @@index([sportId])
+  @@index([leagueId])
+  @@index([status])
+  @@index([startsAt])
+  @@index([confidence])
+  @@index([externalId])
+}
+
+model TeamMatchMetric {
+  id            String      @id
+  eventId       String
+  participantId String
+  source        String
+  version       String
+  metricKey     String
+  metricValue   Float
+  sampleSize    Int?
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, participantId, metricKey, source, version])
+  @@index([eventId])
+  @@index([participantId])
+  @@index([metricKey])
+}
+
+model TeamAggregateMetric {
+  id            String      @id
+  participantId String
+  sportId       String
+  source        String
+  version       String
+  scope         String
+  metricKey     String
+  metricValue   Float
+  sampleSize    Int
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  sport         Sport       @relation(fields: [sportId], references: [id], onDelete: Cascade)
+
+  @@unique([participantId, scope, metricKey, source, version])
+  @@index([participantId])
+  @@index([sportId])
+  @@index([metricKey])
+  @@index([scope])
+}
+
+model ProviderIngestionLog {
+  id          String   @id
+  provider    String
+  resource    String
+  params      Json
+  results     Int
+  requestedAt DateTime @default(now())
+  storedAt    DateTime @default(now())
+  status      String
+  error       String?
+
+  @@index([provider])
+  @@index([resource])
+  @@index([requestedAt])
+}
+
+model Prediction {
+  id               String             @id
+  eventId          String
+  predictedOutcome String
+  confidence       Int
+  probability      Float
+  generatedAt      DateTime
+  modelVersionId   String
+  dataSourceId     String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  event            Event              @relation(fields: [eventId], references: [id])
+  modelVersion     ModelVersion       @relation(fields: [modelVersionId], references: [id])
+  dataSource       DataSource         @relation(fields: [dataSourceId], references: [id])
+  factors          PredictionFactor[]
+  caveats          PredictionCaveat[]
+
+  @@index([eventId])
+  @@index([confidence])
+  @@index([generatedAt])
+}
+
+model PredictionFactor {
+  id           String                    @id
+  predictionId String
+  label        String
+  impact       Int
+  direction    PredictionFactorDirection
+  explanation  String
+  createdAt    DateTime                  @default(now())
+  prediction   Prediction                @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+
+  @@index([predictionId])
+}
+
+model PredictionCaveat {
+  id           String     @id
+  predictionId String
+  text         String
+  createdAt    DateTime   @default(now())
+  prediction   Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+
+  @@index([predictionId])
+}
+
+model EventAnalysis {
+  id                String         @id @default(cuid())
+  eventId           String
+  event             Event          @relation(fields: [eventId], references: [id])
+
+  provider          String
+  modelName         String
+  promptVersion     String
+  featureVersion    String?
+  predictionVersion String?
+  inputHash         String
+
+  status            AnalysisStatus
+  analysisType      AnalysisType   @default(EXPERIMENTAL_AI)
+  confidence        Float?
+  dataQualityScore  Float?
+
+  headline          String?
+  shortSummary      String?
+  detailedSummary   String?
+
+  predictedOutcome  Json?
+  possibleResults   Json?
+  observations      Json?
+  strengths         Json?
+  weaknesses        Json?
+  uncertainties     Json?
+  keyFactors        Json?
+  playerInsights    Json?
+  visualScores      Json?
+  modelLimitations  Json?
+
+  inputSnapshot     Json?
+  rawResponse       Json?
+
+  promptTokens      Int?
+  completionTokens  Int?
+  totalTokens       Int?
+  latencyMs         Int?
+
+  attemptCount      Int            @default(0)
+  lastAttemptAt     DateTime?
+  generatedAt       DateTime?
+  staleReason       String?
+  errorCode         String?
+  errorMessage      String?
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([eventId, inputHash, promptVersion])
+  @@index([eventId])
+  @@index([status])
+  @@index([generatedAt])
+  @@index([status, lastAttemptAt])
+}
+
+model EnrichmentJobRun {
+  id               String    @id @default(cuid())
+  trigger          String
+  startedAt        DateTime
+  finishedAt       DateTime?
+  selected         Int       @default(0)
+  completed        Int       @default(0)
+  failed           Int       @default(0)
+  skipped          Int       @default(0)
+  requests         Int       @default(0)
+  promptTokens     Int       @default(0)
+  completionTokens Int       @default(0)
+  totalTokens      Int       @default(0)
+  status           String
+  error            String?
+  createdAt        DateTime  @default(now())
+
+  @@index([startedAt])
+}
+
+model NewsItem {
+  id          String    @id
+  title       String
+  source      String
+  publishedAt DateTime
+  sportId     String
+  href        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  sport       Sport     @relation(fields: [sportId], references: [id])
+
+  @@index([sportId])
+  @@index([publishedAt])
+}

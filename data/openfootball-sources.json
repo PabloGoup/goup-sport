@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "sources": [
+    {
+      "key": "england-premier-league-2025-26",
+      "enabled": true,
+      "league": "Premier League",
+      "country": "England",
+      "season": 2025,
+      "url": "https://openfootball.github.io/england/2025-26/1-premierleague.json",
+      "notes": "Confirmed OpenFootball JSON source with 380 matches."
+    },
+    {
+      "key": "spain-la-liga-2025-26",
+      "enabled": true,
+      "league": "La Liga",
+      "country": "Spain",
+      "season": 2025,
+      "url": "https://raw.githubusercontent.com/openfootball/espana/master/2025-26/1-liga.txt",
+      "notes": "Confirmed OpenFootball txt source. Parsed locally by ingest-openfootball-league."
+    },
+    {
+      "key": "germany-bundesliga-2025-26",
+      "enabled": true,
+      "league": "Bundesliga",
+      "country": "Germany",
+      "season": 2025,
+      "url": "https://raw.githubusercontent.com/openfootball/deutschland/master/2025-26/1-bundesliga.txt",
+      "notes": "Confirmed OpenFootball txt source. Parsed locally by ingest-openfootball-league."
+    },
+    {
+      "key": "italy-serie-a-2025-26",
+      "enabled": true,
+      "league": "Serie A",
+      "country": "Italy",
+      "season": 2025,
+      "url": "https://raw.githubusercontent.com/openfootball/italy/master/2025-26/1-seriea.txt",
+      "notes": "Confirmed OpenFootball txt source. Parsed locally by ingest-openfootball-league."
+    },
+    {
+      "key": "uefa-champions-league-2025-26",
+      "enabled": true,
+      "league": "Champions League",
+      "country": "Europe",
+      "season": 2025,
+      "url": "https://raw.githubusercontent.com/openfootball/champions-league/master/2025-26/cl.txt",
+      "notes": "Confirmed OpenFootball txt source. Includes league phase and knockout schedule/results when available."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: goup-sport-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: goup_sport
+      POSTGRES_PASSWORD: goup_sport_dev
+      POSTGRES_DB: goup_sport
+    ports:
+      - "5433:5432"
+    volumes:
+      - goup_sport_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goup_sport -d goup_sport"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  goup_sport_postgres_data:

@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "principles": [
+    "Do not call paid/free-quota APIs from frontend rendering.",
+    "Use StatsBomb Open Data for advanced historical features where coverage exists.",
+    "Use OpenFootball for broad schedules/results when a verified source exists.",
+    "Use API-Football only as an operational cache warmer for gaps and current competitions.",
+    "If a league has only score/calendar coverage, build GOUP metrics from results and form instead of inventing advanced stats."
+  ],
+  "tiers": [
+    {
+      "key": "europe-core",
+      "priority": 1,
+      "description": "Major European competitions with current or historical open coverage.",
+      "competitions": [
+        {
+          "name": "Premier League",
+          "country": "England",
+          "primarySource": "OpenFootball",
+          "secondarySource": "StatsBomb historical",
+          "status": "verified-openfootball"
+        },
+        {
+          "name": "La Liga",
+          "country": "Spain",
+          "primarySource": "OpenFootball",
+          "secondarySource": "StatsBomb historical",
+          "status": "verified-openfootball"
+        },
+        {
+          "name": "Bundesliga",
+          "country": "Germany",
+          "primarySource": "OpenFootball",
+          "secondarySource": "StatsBomb historical",
+          "status": "verified-openfootball"
+        },
+        {
+          "name": "Serie A",
+          "country": "Italy",
+          "primarySource": "OpenFootball",
+          "secondarySource": "StatsBomb historical",
+          "status": "verified-openfootball"
+        },
+        {
+          "name": "Ligue 1",
+          "country": "France",
+          "primarySource": "StatsBomb historical/API-Football cache",
+          "secondarySource": "OpenFootball pending verification",
+          "status": "needs-current-open-source"
+        },
+        {
+          "name": "Champions League",
+          "country": "Europe",
+          "primarySource": "OpenFootball",
+          "secondarySource": "StatsBomb historical",
+          "status": "verified-openfootball"
+        }
+      ]
+    },
+    {
+      "key": "south-america-core",
+      "priority": 1,
+      "description": "South American competitions required for GOUP SPORT regional relevance.",
+      "competitions": [
+        {
+          "name": "Copa Libertadores",
+          "country": "South America",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "manual calendar file if needed",
+          "status": "needs-source"
+        },
+        {
+          "name": "Copa Sudamericana",
+          "country": "South America",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "manual calendar file if needed",
+          "status": "needs-source"
+        },
+        {
+          "name": "Brasileirao Serie A",
+          "country": "Brazil",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "manual calendar file if needed",
+          "status": "needs-source"
+        },
+        {
+          "name": "Liga Profesional Argentina",
+          "country": "Argentina",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "StatsBomb historical partial",
+          "status": "partial-historical"
+        },
+        {
+          "name": "Primera Division Chile",
+          "country": "Chile",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "manual calendar file if needed",
+          "status": "needs-source"
+        },
+        {
+          "name": "Primera A Colombia",
+          "country": "Colombia",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "manual calendar file if needed",
+          "status": "needs-source"
+        },
+        {
+          "name": "Primera Division Uruguay",
+          "country": "Uruguay",
+          "primarySource": "API-Football cache or authorized open dataset",
+          "secondarySource": "manual calendar file if needed",
+          "status": "needs-source"
+        }
+      ]
+    },
+    {
+      "key": "national-teams",
+      "priority": 1,
+      "description": "International competitions and national-team context.",
+      "competitions": [
+        {
+          "name": "World Cup",
+          "country": "World",
+          "primarySource": "OpenFootball",
+          "secondarySource": "StatsBomb historical",
+          "status": "active"
+        },
+        {
+          "name": "Copa America",
+          "country": "South America",
+          "primarySource": "StatsBomb 2024",
+          "secondarySource": "API-Football cache",
+          "status": "verified-statsbomb"
+        },
+        {
+          "name": "UEFA Euro",
+          "country": "Europe",
+          "primarySource": "StatsBomb",
+          "secondarySource": "API-Football cache",
+          "status": "verified-statsbomb"
+        }
+      ]
+    }
+  ]
+}
