@@ -7,6 +7,7 @@ import {
 } from "@/domain/prediction/football-poisson";
 import { computeEloRatings, eloWinProbabilities, type EloMatch } from "@/domain/prediction/elo";
 import { seedFromString, simulateMatch, type SimulationResult } from "@/domain/prediction/monte-carlo";
+import { canonicalTeamName } from "@/domain/prediction/team-name";
 
 export const FOOTBALL_ENSEMBLE_VERSION = "goup-ensemble-football-0.3.0";
 
@@ -32,15 +33,6 @@ function scoresFromPayload(payload: unknown): { home: number; away: number } | n
   return { home, away };
 }
 
-function normalizeName(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
 export type HeadToHeadMatch = {
   date: string;
   competition: string;
@@ -60,8 +52,8 @@ export async function getFootballHeadToHead(
 ): Promise<HeadToHeadMatch[]> {
   try {
     const prisma = client ?? getPrisma();
-    const a = normalizeName(homeTeam);
-    const b = normalizeName(awayTeam);
+    const a = canonicalTeamName(homeTeam);
+    const b = canonicalTeamName(awayTeam);
 
     const events = await prisma.event.findMany({
       where: { sportId: "sport-football", status: "completed" },
@@ -76,8 +68,8 @@ export async function getFootballHeadToHead(
 
     const result: HeadToHeadMatch[] = [];
     for (const event of events) {
-      const h = normalizeName(event.home.name);
-      const w = normalizeName(event.away.name);
+      const h = canonicalTeamName(event.home.name);
+      const w = canonicalTeamName(event.away.name);
       const isCross = (h === a && w === b) || (h === b && w === a);
       if (!isCross) continue;
 
@@ -120,8 +112,8 @@ async function loadCompletedFootballMatches(
     const score = scoresFromPayload(event.rawPayload);
     if (!score) continue;
     matches.push({
-      homeTeam: event.home.name,
-      awayTeam: event.away.name,
+      homeTeam: canonicalTeamName(event.home.name),
+      awayTeam: canonicalTeamName(event.away.name),
       homeGoals: score.home,
       awayGoals: score.away,
       weight: recencyWeight(event.startsAt, now),
@@ -172,17 +164,16 @@ export async function getFootballStatisticalPrediction(
 ): Promise<FootballPredictionResult | null> {
   try {
     const prisma = client ?? getPrisma();
-    const providers = input.providers ?? ["OpenFootball", "StatsBomb Open Data", "TheSportsDB"];
+    const providers = input.providers ?? ["OpenFootball", "StatsBomb Open Data", "TheSportsDB", "API-Sports Football"];
     const matches = await loadCompletedFootballMatches(prisma, providers);
     if (matches.length === 0) return null;
 
+    // Nombres canonicos para enlazar el evento con su historia entre proveedores.
+    const homeKey = canonicalTeamName(input.homeTeam);
+    const awayKey = canonicalTeamName(input.awayTeam);
+
     const { strengths, leagueAverageGoals } = computeAdjustedTeamStrengths(matches);
-    const prediction = predictFootballMatch(
-      input.homeTeam,
-      input.awayTeam,
-      strengths,
-      leagueAverageGoals,
-    );
+    const prediction = predictFootballMatch(homeKey, awayKey, strengths, leagueAverageGoals);
     if (!prediction) return null;
 
     const poisson = prediction.probabilities;
@@ -193,8 +184,8 @@ export async function getFootballStatisticalPrediction(
       .reverse()
       .map((m) => ({ homeTeam: m.homeTeam, awayTeam: m.awayTeam, homeGoals: m.homeGoals, awayGoals: m.awayGoals }));
     const ratings = computeEloRatings(chronological);
-    const home = ratings.get(input.homeTeam);
-    const away = ratings.get(input.awayTeam);
+    const home = ratings.get(homeKey);
+    const away = ratings.get(awayKey);
 
     let probabilities = poisson;
     let elo: FootballPredictionResult["components"]["elo"] = null;

@@ -62,6 +62,10 @@ export function estimateTokens(inputs: EventAnalysisInput[]): number {
 
 /** Sin forma reciente ni metricas historicas en ambos participantes no hay base analizable. */
 export function hasEnoughData(input: EventAnalysisInput): boolean {
+  // Si el modelo estadistico logro predecir el evento, hay datos suficientes:
+  // Groq debe explicar esa prediccion aunque la forma reciente venga vacia.
+  if (input.statisticalPrediction) return true;
+
   const hasSignal = (p: EventAnalysisInput["participantA"]) =>
     Boolean(p.recentForm?.length) ||
     Boolean(p.seasonStats && Object.keys(p.seasonStats).length) ||

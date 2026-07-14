@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "source": "TheSportsDB",
+  "sport": "basketball",
+  "leagues": [
+    { "id": "4387", "name": "NBA", "country": "USA" },
+    { "id": "4388", "name": "NBA G League", "country": "USA" },
+    { "id": "5506", "name": "NBA Cup", "country": "USA" },
+    { "id": "4850", "name": "FIBA AmeriCup", "country": "USA" },
+    { "id": "4408", "name": "Spanish Liga ACB", "country": "Spain" },
+    { "id": "5134", "name": "Spanish Primera FEB", "country": "Spain" },
+    { "id": "4433", "name": "Italian Lega Basket", "country": "Italy" },
+    { "id": "5377", "name": "Italian Serie A2", "country": "Italy" },
+    { "id": "4441", "name": "German BBL", "country": "Germany" },
+    { "id": "5132", "name": "German ProA", "country": "Germany" },
+    { "id": "4423", "name": "French LNB", "country": "France" },
+    { "id": "4577", "name": "French LNB Pro B", "country": "France" },
+    { "id": "4452", "name": "Greek Basket League", "country": "Greece" },
+    { "id": "4475", "name": "Turkish Basketbol Super Ligi", "country": "Turkey" },
+    { "id": "4734", "name": "Argentine LNB", "country": "Argentina" },
+    { "id": "4434", "name": "Australian NBL", "country": "Australia" },
+    { "id": "5113", "name": "Australian WNBL", "country": "Australia" }
+  ]
+}

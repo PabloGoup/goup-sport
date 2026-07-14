@@ -7,6 +7,21 @@ function mapFixtureStatus(status: string): EventStatus {
   return "today";
 }
 
+/**
+ * Estado para PERSISTENCIA (enum Prisma completo). El modelo y la forma
+ * reciente filtran por "completed", asi que los partidos finalizados deben
+ * guardarse como "completed", no como "today".
+ */
+export type StoredEventStatus = "live" | "today" | "upcoming" | "completed" | "postponed";
+
+export function mapFixtureStorageStatus(status: string): StoredEventStatus {
+  if (["1H", "HT", "2H", "ET", "BT", "P", "LIVE"].includes(status)) return "live";
+  if (["NS", "TBD"].includes(status)) return "upcoming";
+  if (["FT", "AET", "PEN", "WO", "AWD"].includes(status)) return "completed";
+  if (["PST", "CANC", "ABD", "SUSP", "INT"].includes(status)) return "postponed";
+  return "today";
+}
+
 function shortName(name: string) {
   return name
     .split(/\s+/)

@@ -30,8 +30,10 @@
     "ingest:tennis:jeff-sackmann": "tsx scripts/ingest-tennis-jeff-sackmann.ts",
     "ingest:thesportsdb": "tsx scripts/ingest-thesportsdb-football.ts",
     "ingest:football-data": "tsx scripts/ingest-football-data-uk.ts",
+    "ingest:thesportsdb:basketball": "tsx scripts/ingest-thesportsdb-basketball.ts",
     "features:statsbomb-football": "tsx scripts/extract-statsbomb-football-features.ts",
     "ai:enrich-events": "tsx scripts/ai-enrich-events.ts",
+    "backtest:football": "tsx scripts/backtest-football.ts",
     "test": "vitest run"
   },
   "prisma": {

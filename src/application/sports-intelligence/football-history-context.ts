@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { getPrisma } from "@/lib/prisma";
 import type { EventInsight, FeaturedPlayerCard, Team } from "@/domain/sports-intelligence/types";
+import { canonicalTeamName } from "@/domain/prediction/team-name";
 
 type StatsBombEventPayload = {
   match?: {
@@ -56,8 +57,8 @@ function resultForTeam(event: {
     return null;
   }
 
-  const isHome = normalizeName(event.home.name) === normalizeName(teamName);
-  const isAway = normalizeName(event.away.name) === normalizeName(teamName);
+  const isHome = canonicalTeamName(event.home.name) === canonicalTeamName(teamName);
+  const isAway = canonicalTeamName(event.away.name) === canonicalTeamName(teamName);
   if (!isHome && !isAway) return null;
   if (homeScore === awayScore) return "D";
 
@@ -81,7 +82,7 @@ function resultDetailForTeam(event: {
     return null;
   }
 
-  const isHome = normalizeName(event.home.name) === normalizeName(teamName);
+  const isHome = canonicalTeamName(event.home.name) === canonicalTeamName(teamName);
 
   return {
     result,
@@ -100,8 +101,8 @@ export async function getFootballRecentForm(
   const limit = typeof options === "number" ? options : (options.limit ?? 5);
   const providers =
     typeof options === "number"
-      ? ["StatsBomb Open Data", "OpenFootball"]
-      : (options.providers ?? ["StatsBomb Open Data", "OpenFootball"]);
+      ? ["StatsBomb Open Data", "OpenFootball", "TheSportsDB", "API-Sports Football"]
+      : (options.providers ?? ["StatsBomb Open Data", "OpenFootball", "TheSportsDB", "API-Sports Football"]);
   const prisma = client ?? getPrisma();
   const events = await prisma.event.findMany({
     where: {
@@ -135,7 +136,7 @@ export async function getFootballRecentResults(
   client?: ReturnType<typeof getPrisma>,
 ) {
   const limit = options.limit ?? 5;
-  const providers = options.providers ?? ["OpenFootball", "StatsBomb Open Data", "TheSportsDB"];
+  const providers = options.providers ?? ["OpenFootball", "StatsBomb Open Data", "TheSportsDB", "API-Sports Football"];
   const prisma = client ?? getPrisma();
   const events = await prisma.event.findMany({
     where: {
@@ -169,7 +170,7 @@ export function recentFormProvidersForEvent(event: EventInsight) {
     return ["OpenFootball"];
   }
 
-  return ["OpenFootball", "StatsBomb Open Data", "TheSportsDB"];
+  return ["OpenFootball", "StatsBomb Open Data", "TheSportsDB", "API-Sports Football"];
 }
 
 function scoreForPosition(position?: string) {

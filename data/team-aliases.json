@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "description": "Alias curados de equipos entre proveedores (TheSportsDB vs API-Football/OpenFootball). Clave y valor son nombres ya normalizados (minusculas, sin acentos, sin sufijos de pais/tipo-club). Solo coincidencias verificadas manualmente; NO agregar matches inciertos.",
+  "aliases": {
+    "everton de vina del mar": "everton de vina",
+    "utc cajamarca": "cajamarca",
+    "olympique de marseille": "marseille",
+    "ca atlas": "atlas",
+    "athletic club": "athletic bilbao",
+    "atletico de madrid": "atletico madrid",
+    "internazionale": "inter",
+    "fc internazionale milano": "inter",
+    "borussia monchengladbach": "monchengladbach"
+  }
+}

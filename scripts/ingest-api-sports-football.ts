@@ -2,7 +2,7 @@ import { loadEnvConfig } from "@next/env";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { getFootballFixtures } from "../src/infrastructure/api-sports/client";
-import { normalizeFootballFixture } from "../src/infrastructure/api-sports/normalizers";
+import { normalizeFootballFixture, mapFixtureStorageStatus } from "../src/infrastructure/api-sports/normalizers";
 
 loadEnvConfig(process.cwd());
 
@@ -153,6 +153,7 @@ async function main() {
 
   for (const fixture of raw.response) {
     const normalized = normalizeFootballFixture(fixture);
+    const storageStatus = mapFixtureStorageStatus(fixture.fixture.status.short);
     const leagueId = `league-football-api-${fixture.league.id}`;
     const homeId = normalized.home.id;
     const awayId = normalized.away.id;
@@ -203,7 +204,7 @@ async function main() {
       update: {
         externalId: String(fixture.fixture.id),
         startsAt: new Date(fixture.fixture.date),
-        status: normalized.status,
+        status: storageStatus,
         statusLabel: fixture.fixture.status.long,
         round: fixture.league.round ?? null,
         season: fixture.league.season,
@@ -221,7 +222,7 @@ async function main() {
         sportId: "sport-football",
         leagueId,
         startsAt: new Date(fixture.fixture.date),
-        status: normalized.status,
+        status: storageStatus,
         statusLabel: fixture.fixture.status.long,
         round: fixture.league.round ?? null,
         season: fixture.league.season,
