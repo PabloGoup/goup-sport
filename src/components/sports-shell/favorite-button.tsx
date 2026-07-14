@@ -4,6 +4,7 @@ import type { MouseEvent } from "react";
 import { useSyncExternalStore } from "react";
 
 const storageKey = "goup-sport:favorites";
+const emptyFavorites: string[] = [];
 let cachedRawFavorites: string | null = null;
 let cachedFavorites: string[] = [];
 
@@ -38,7 +39,7 @@ function subscribe(callback: () => void) {
 }
 
 export function FavoriteButton({ eventId }: { eventId: string }) {
-  const favorites = useSyncExternalStore(subscribe, readFavorites, () => []);
+  const favorites = useSyncExternalStore(subscribe, readFavorites, () => emptyFavorites);
   const isFavorite = favorites.includes(eventId);
 
   function toggleFavorite(event: MouseEvent<HTMLButtonElement>) {

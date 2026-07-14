@@ -23,13 +23,13 @@ export function GlobalSearch({ results }: { results: SearchResult[] }) {
 
   return (
     <div className="relative ml-auto w-full max-w-[340px]">
-      <label className="flex min-w-0 items-center gap-2 rounded-md bg-white px-3 py-2 text-[#ff5a00]">
+      <label className="flex min-w-0 items-center gap-2 rounded-md border border-white/8 bg-white/8 px-3 py-2 text-[#ff7a2f]">
         <span className="text-xl">⌕</span>
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar"
-          className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-[#26262d] outline-none placeholder:text-[#ff5a00]"
+          className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-[#ff7a2f]"
         />
       </label>
       {filteredResults.length > 0 && (

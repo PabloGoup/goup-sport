@@ -17,6 +17,7 @@ function eventTime(event: EventInsight) {
   return new Date(event.startsAt).toLocaleTimeString("es-CL", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 }
 
@@ -38,6 +39,13 @@ function probabilityTiles(event: EventInsight) {
     [secondary.label, secondary.value],
   ];
 }
+
+const cardAccents = [
+  "linear-gradient(110deg,rgba(0,196,204,0.88),rgba(8,20,34,0.7) 48%,rgba(8,20,34,0.2))",
+  "linear-gradient(110deg,rgba(86,51,197,0.9),rgba(8,20,34,0.68) 50%,rgba(8,20,34,0.18))",
+  "linear-gradient(110deg,rgba(255,90,0,0.88),rgba(8,20,34,0.7) 48%,rgba(8,20,34,0.18))",
+  "linear-gradient(110deg,rgba(16,120,104,0.9),rgba(8,20,34,0.68) 50%,rgba(8,20,34,0.18))",
+];
 
 export function EventCarousel({ events }: { events: EventInsight[] }) {
   const carouselEvents = useMemo(() => events.slice(0, 12), [events]);
@@ -68,18 +76,15 @@ export function EventCarousel({ events }: { events: EventInsight[] }) {
   if (carouselEvents.length === 0) return null;
 
   return (
-    <section className="overflow-hidden rounded-xl bg-[#111] text-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-2.5">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ffb48a]">Eventos destacados</p>
-          <p className="mt-0.5 text-xs font-semibold text-white/65">Partidos reales y modelos GOUP</p>
-        </div>
+    <section className="overflow-hidden text-white">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-2xl font-black">Eventos destacados</h2>
         <div className="flex shrink-0 gap-2">
           <button
             type="button"
             aria-label="Evento anterior"
             onClick={() => setActiveIndex((current) => (current - 1 + carouselEvents.length) % carouselEvents.length)}
-            className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-lg font-black hover:bg-white/20"
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-lg font-black hover:bg-white/18"
           >
             ‹
           </button>
@@ -87,40 +92,47 @@ export function EventCarousel({ events }: { events: EventInsight[] }) {
             type="button"
             aria-label="Evento siguiente"
             onClick={() => setActiveIndex((current) => (current + 1) % carouselEvents.length)}
-            className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-lg font-black hover:bg-white/20"
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-lg font-black hover:bg-white/18"
           >
             ›
           </button>
         </div>
       </div>
 
-      <div className="relative p-3">
+      <div className="relative">
         <div
           ref={trackRef}
-          className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1"
+          className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1"
         >
           {carouselEvents.map((event, index) => (
             <Link
               key={event.id}
               href={`/eventos/${event.id}`}
               onFocus={() => setActiveIndex(index)}
-              className={`relative min-h-[222px] w-[86%] shrink-0 snap-start overflow-hidden rounded-xl bg-[#181922] p-3 transition sm:w-[430px] lg:w-[468px] ${
-                index === activeIndex ? "ring-2 ring-[#ff5a00]" : "opacity-90 hover:opacity-100"
+              className={`relative min-h-[250px] w-[88%] shrink-0 snap-start overflow-hidden rounded-2xl bg-[#102132] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.28)] transition sm:w-[520px] lg:w-[590px] ${
+                index === activeIndex ? "ring-2 ring-[#ff5a00]" : "opacity-92 hover:opacity-100"
               }`}
             >
               <div
-                className="absolute inset-0 bg-cover bg-center opacity-62"
+                className="absolute inset-0 bg-cover bg-center opacity-72"
                 style={{ backgroundImage: `url(${sportBackgrounds[event.sport]})` }}
               />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.88),rgba(0,0,0,0.5)),radial-gradient(circle_at_78%_24%,rgba(255,90,0,0.5),transparent_30%)]" />
-              <div className="relative flex min-h-[198px] flex-col justify-between">
+              <div
+                className="absolute inset-0"
+                style={{ background: cardAccents[index % cardAccents.length] }}
+              />
+              <div className="absolute -right-10 top-6 h-40 w-40 rounded-full border-[22px] border-white/10" />
+              <div className="absolute -right-5 bottom-8 text-[120px] leading-none opacity-20">
+                {sportIcons[event.sport]}
+              </div>
+              <div className="relative flex min-h-[218px] flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-lg">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-lg">
                         {sportIcons[event.sport]}
                       </span>
-                      <p className="truncate rounded bg-white/14 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.04em] text-[#ffd2bd]">
+                      <p className="truncate rounded bg-white/16 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.04em] text-white">
                         {sportLabels[event.sport]} / {event.country ?? "Global"} / {event.league}
                       </p>
                     </div>
@@ -129,31 +141,30 @@ export function EventCarousel({ events }: { events: EventInsight[] }) {
                     </span>
                   </div>
 
-                  <div className="mt-5 space-y-2.5">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <TeamCrest team={event.home} className="h-10 w-10" />
-                      <h2 className="truncate text-2xl font-black leading-tight sm:text-3xl">
-                        {event.home.name}
-                      </h2>
-                    </div>
-                    <div className="flex min-w-0 items-center gap-3">
-                      <TeamCrest team={event.away} className="h-10 w-10" />
-                      <h2 className="truncate text-2xl font-black leading-tight sm:text-3xl">
-                        {event.away.name}
-                      </h2>
+                  <div className="mt-8 max-w-[78%]">
+                    <h3 className="text-sm font-black text-white/78">{getEventStage(event)} · {eventTime(event)}</h3>
+                    <div className="mt-3 grid gap-2">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <TeamCrest team={event.home} className="h-10 w-10" />
+                        <h2 className="truncate text-3xl font-black leading-tight sm:text-4xl">
+                          {event.home.name}
+                        </h2>
+                      </div>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <TeamCrest team={event.away} className="h-10 w-10" />
+                        <h2 className="truncate text-3xl font-black leading-tight sm:text-4xl">
+                          {event.away.name}
+                        </h2>
+                      </div>
                     </div>
                   </div>
-
-                  <p className="mt-3 truncate text-sm font-black text-[#5da9ff]">
-                    {getEventStage(event)} · {eventTime(event)}
-                  </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 overflow-hidden rounded-xl bg-white text-[#071522]">
                   {probabilityTiles(event).map(([label, value]) => (
-                    <div key={label} className="rounded-md bg-white px-2 py-2 text-center text-[#1f2028]">
+                    <div key={label} className="border-r border-[#dfe5eb] px-3 py-2 text-center last:border-r-0">
                       <p className="truncate text-[10px] font-black uppercase text-[#6f717c]">{label}</p>
-                      <p className="mt-0.5 truncate text-sm font-black">{value}</p>
+                      <p className="mt-0.5 truncate text-base font-black text-[#00969b]">{value}</p>
                     </div>
                   ))}
                 </div>

@@ -1,0 +1,54 @@
+name: data-refresh
+
+# Mantiene GOUP SPORT al dia: ingiere calendario + resultados recientes y
+# enriquece con IA los eventos nuevos o que cambiaron. Todo con fuentes gratuitas.
+on:
+  schedule:
+    # Todos los dias 09:00 UTC (madrugada en Chile). Ajustable.
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      run_enrichment:
+        description: "Ejecutar enriquecimiento IA (Groq)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_ENRICHMENT_ENABLED: ${{ secrets.GROQ_ENRICHMENT_ENABLED }}
+      GROQ_MODEL: ${{ secrets.GROQ_MODEL }}
+      GROQ_PROMPT_VERSION: ${{ secrets.GROQ_PROMPT_VERSION }}
+      THESPORTSDB_KEY: ${{ secrets.THESPORTSDB_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Generar cliente Prisma
+        run: npx prisma generate
+
+      # 1) Calendario + resultados recientes (gratis, TheSportsDB).
+      - name: Ingesta TheSportsDB
+        run: npm run ingest:thesportsdb
+
+      # 2) Enriquecer solo eventos nuevos o con hash de entrada cambiado.
+      #    Idempotente: no reprocesa lo que no cambio.
+      - name: Enriquecimiento IA
+        if: ${{ github.event_name == 'schedule' || inputs.run_enrichment }}
+        run: npm run ai:enrich-events
+        continue-on-error: true

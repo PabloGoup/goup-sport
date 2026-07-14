@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "source": "TheSportsDB",
+  "leagues": [
+    {
+      "id": "5215",
+      "name": "Argentina Primera B Metropolitana",
+      "country": "Argentina"
+    },
+    {
+      "id": "5523",
+      "name": "Argentina Torneo Federal A",
+      "country": "Argentina"
+    },
+    {
+      "id": "5428",
+      "name": "Argentinian Copa de la Liga Profesional",
+      "country": "Argentina"
+    },
+    {
+      "id": "4616",
+      "name": "Argentinian Primera B Nacional",
+      "country": "Argentina"
+    },
+    {
+      "id": "5524",
+      "name": "Argentinian Primera C",
+      "country": "Argentina"
+    },
+    {
+      "id": "4623",
+      "name": "Belgian Challenger Pro League",
+      "country": "Belgium"
+    },
+    {
+      "id": "5831",
+      "name": "Belgian Cup",
+      "country": "Belgium"
+    },
+    {
+      "id": "4338",
+      "name": "Belgian Pro League",
+      "country": "Belgium"
+    },
+    {
+      "id": "5201",
+      "name": "Brazil Brasileiro Women",
+      "country": "Brazil"
+    },
+    {
+      "id": "5079",
+      "name": "Brazil Serie D",
+      "country": "Brazil"
+    },
+    {
+      "id": "5676",
+      "name": "Brazilian Campeonato Acreano",
+      "country": "Brazil"
+    },
+    {
+      "id": "5677",
+      "name": "Brazilian Campeonato Alagoano",
+      "country": "Brazil"
+    },
+    {
+      "id": "5678",
+      "name": "Brazilian Campeonato Amapaense",
+      "country": "Brazil"
+    },
+    {
+      "id": "4899",
+      "name": "Chile Primera B",
+      "country": "Chile"
+    },
+    {
+      "id": "4627",
+      "name": "Chile Primera Division",
+      "country": "Chile"
+    },
+    {
+      "id": "5481",
+      "name": "Chile Segunda División",
+      "country": "Chile"
+    },
+    {
+      "id": "5858",
+      "name": "Chilean Copa de la Liga",
+      "country": "Chile"
+    },
+    {
+      "id": "5378",
+      "name": "Copa Chile",
+      "country": "Chile"
+    },
+    {
+      "id": "4497",
+      "name": "Colombian Liga DIMAYOR",
+      "country": "Colombia"
+    },
+    {
+      "id": "4951",
+      "name": "Colombian Torneo DIMAYOR",
+      "country": "Colombia"
+    },
+    {
+      "id": "5183",
+      "name": "Copa Colombia",
+      "country": "Colombia"
+    },
+    {
+      "id": "5804",
+      "name": "Superliga Colombiana",
+      "country": "Colombia"
+    },
+    {
+      "id": "5636",
+      "name": "Copa Ecuador",
+      "country": "Ecuador"
+    },
+    {
+      "id": "4686",
+      "name": "Ecuadorian Serie A",
+      "country": "Ecuador"
+    },
+    {
+      "id": "4957",
+      "name": "Ecuadorian Serie B",
+      "country": "Ecuador"
+    },
+    {
+      "id": "5884",
+      "name": "Supercopa Ecuador",
+      "country": "Ecuador"
+    },
+    {
+      "id": "4570",
+      "name": "EFL Cup",
+      "country": "England"
+    },
+    {
+      "id": "4847",
+      "name": "EFL Trophy",
+      "country": "England"
+    },
+    {
+      "id": "5225",
+      "name": "England Non League Div One Isthmian North",
+      "country": "England"
+    },
+    {
+      "id": "5226",
+      "name": "England Non League Div One Isthmian South",
+      "country": "England"
+    },
+    {
+      "id": "5228",
+      "name": "England Non League Div One Southern Central",
+      "country": "England"
+    },
+    {
+      "id": "4484",
+      "name": "Coupe de France",
+      "country": "France"
+    },
+    {
+      "id": "4504",
+      "name": "Coupe de la Ligue",
+      "country": "France"
+    },
+    {
+      "id": "5203",
+      "name": "France Première Ligue",
+      "country": "France"
+    },
+    {
+      "id": "4334",
+      "name": "French Ligue 1",
+      "country": "France"
+    },
+    {
+      "id": "4401",
+      "name": "French Ligue 2",
+      "country": "France"
+    },
+    {
+      "id": "4485",
+      "name": "DFB-Pokal",
+      "country": "Germany"
+    },
+    {
+      "id": "5403",
+      "name": "DFB-Pokal Frauen",
+      "country": "Germany"
+    },
+    {
+      "id": "4399",
+      "name": "German 2. Bundesliga",
+      "country": "Germany"
+    },
+    {
+      "id": "4331",
+      "name": "German Bundesliga",
+      "country": "Germany"
+    },
+    {
+      "id": "5891",
+      "name": "German Oberliga Baden-Württemberg",
+      "country": "Germany"
+    },
+    {
+      "id": "4506",
+      "name": "Coppa Italia",
+      "country": "Italy"
+    },
+    {
+      "id": "5632",
+      "name": "Coppa Italia Women",
+      "country": "Italy"
+    },
+    {
+      "id": "4332",
+      "name": "Italian Serie A",
+      "country": "Italy"
+    },
+    {
+      "id": "5919",
+      "name": "Italian Serie A Womens Cup",
+      "country": "Italy"
+    },
+    {
+      "id": "4394",
+      "name": "Italian Serie B",
+      "country": "Italy"
+    },
+    {
+      "id": "5662",
+      "name": "Mexican Campeon de Campeones",
+      "country": "Mexico"
+    },
+    {
+      "id": "4654",
+      "name": "Mexican Liga de Expansión MX",
+      "country": "Mexico"
+    },
+    {
+      "id": "4350",
+      "name": "Mexican Primera League",
+      "country": "Mexico"
+    },
+    {
+      "id": "5206",
+      "name": "Mexico Liga MX Femenil",
+      "country": "Mexico"
+    },
+    {
+      "id": "5908",
+      "name": "Peruvian Copa de la Liga",
+      "country": "Peru"
+    },
+    {
+      "id": "4688",
+      "name": "Peruvian Primera Division",
+      "country": "Peru"
+    },
+    {
+      "id": "5073",
+      "name": "Peruvian Segunda División",
+      "country": "Peru"
+    },
+    {
+      "id": "5745",
+      "name": "Campeonato de Portugal Serie A",
+      "country": "Portugal"
+    },
+    {
+      "id": "5746",
+      "name": "Campeonato de Portugal Serie B",
+      "country": "Portugal"
+    },
+    {
+      "id": "5747",
+      "name": "Campeonato de Portugal Serie C",
+      "country": "Portugal"
+    },
+    {
+      "id": "5748",
+      "name": "Campeonato de Portugal Serie D",
+      "country": "Portugal"
+    },
+    {
+      "id": "5404",
+      "name": "Campeonato Nacional Feminino",
+      "country": "Portugal"
+    },
+    {
+      "id": "4483",
+      "name": "Copa del Rey",
+      "country": "Spain"
+    },
+    {
+      "id": "4673",
+      "name": "Primera División RFEF Group 1",
+      "country": "Spain"
+    },
+    {
+      "id": "4750",
+      "name": "Primera División RFEF Group 2",
+      "country": "Spain"
+    },
+    {
+      "id": "5703",
+      "name": "Spanish Copa Federacion",
+      "country": "Spain"
+    },
+    {
+      "id": "4335",
+      "name": "Spanish La Liga",
+      "country": "Spain"
+    },
+    {
+      "id": "4346",
+      "name": "American Major League Soccer",
+      "country": "United States"
+    },
+    {
+      "id": "4435",
+      "name": "American NASL",
+      "country": "United States"
+    },
+    {
+      "id": "4521",
+      "name": "American NWSL",
+      "country": "United States"
+    },
+    {
+      "id": "5178",
+      "name": "American NWSL Challenge Cup",
+      "country": "United States"
+    },
+    {
+      "id": "4684",
+      "name": "American USL Championship",
+      "country": "United States"
+    },
+    {
+      "id": "5526",
+      "name": "Copa AUF Uruguay",
+      "country": "Uruguay"
+    },
+    {
+      "id": "5803",
+      "name": "Copa de la Liga AUF",
+      "country": "Uruguay"
+    },
+    {
+      "id": "4432",
+      "name": "Uruguayan Primera Division",
+      "country": "Uruguay"
+    },
+    {
+      "id": "5072",
+      "name": "Uruguayan Segunda División",
+      "country": "Uruguay"
+    }
+  ]
+}

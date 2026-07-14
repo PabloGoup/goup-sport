@@ -8,7 +8,7 @@ import {
 } from "./football-history-context";
 import { getTennisRecentForm, getTennisRecentResults } from "./tennis-history-context";
 
-const calendarProviders = ["GOUP Calendar", "OpenFootball"];
+const calendarProviders = ["GOUP Calendar", "OpenFootball", "TheSportsDB"];
 
 type StoredCalendarEvent = Awaited<ReturnType<typeof readStoredCalendarEvents>>[number];
 

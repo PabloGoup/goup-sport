@@ -1,8 +1,12 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { loadEnvConfig } from "@next/env";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 loadEnvConfig(process.cwd());
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required to store TheSportsDB data.");
@@ -17,8 +21,20 @@ const NORMALIZER = "thesportsdb-football-normalizer-0.1.0";
 const API_KEY = process.env.THESPORTSDB_KEY ?? "3";
 const BASE = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
 
-// Ligas por defecto: competiciones chilenas (gratis en TheSportsDB).
-const DEFAULT_LEAGUES = ["5858", "4627", "5378"];
+// Fallback si no hay manifiesto: competiciones chilenas.
+const FALLBACK_LEAGUES = ["5858", "4627", "5378"];
+
+/** Lee todos los IDs de liga del manifiesto data/thesportsdb-leagues.json. */
+function leaguesFromManifest(): string[] {
+  try {
+    const file = path.join(process.cwd(), "data", "thesportsdb-leagues.json");
+    const parsed = JSON.parse(readFileSync(file, "utf8")) as { leagues?: Array<{ id?: string }> };
+    const ids = (parsed.leagues ?? []).map((l) => l.id).filter((id): id is string => Boolean(id));
+    return ids.length > 0 ? ids : FALLBACK_LEAGUES;
+  } catch {
+    return FALLBACK_LEAGUES;
+  }
+}
 
 type TsdbEvent = {
   idEvent: string;
@@ -27,8 +43,10 @@ type TsdbEvent = {
   strTimestamp: string | null;
   strHomeTeam: string | null;
   idHomeTeam: string | null;
+  strHomeTeamBadge?: string | null;
   strAwayTeam: string | null;
   idAwayTeam: string | null;
+  strAwayTeamBadge?: string | null;
   strLeague: string | null;
   idLeague: string | null;
   strSeason: string | null;
@@ -81,16 +99,31 @@ function mapStatus(event: TsdbEvent, startsAt: Date): { status: string; complete
   return { status: sameDay ? "today" : "upcoming", completed: false };
 }
 
+async function fetchWithRetry(url: string, attempts = 3): Promise<TsdbEvent[] | null> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetch(url);
+      if (response.status === 429) {
+        await sleep(2000 * (attempt + 1));
+        continue;
+      }
+      if (!response.ok) return null;
+      const json = (await response.json()) as { events?: TsdbEvent[] | null };
+      return json.events ?? [];
+    } catch {
+      await sleep(1500 * (attempt + 1));
+    }
+  }
+  return null;
+}
+
 async function fetchLeagueEvents(leagueId: string): Promise<TsdbEvent[]> {
   const results: TsdbEvent[] = [];
   for (const endpoint of ["eventsnextleague", "eventspastleague"]) {
-    const response = await fetch(`${BASE}/${endpoint}.php?id=${leagueId}`);
-    if (!response.ok) {
-      console.warn(`[thesportsdb] ${endpoint} liga ${leagueId} respondio ${response.status}`);
-      continue;
-    }
-    const json = (await response.json()) as { events?: TsdbEvent[] | null };
-    if (json.events) results.push(...json.events);
+    const events = await fetchWithRetry(`${BASE}/${endpoint}.php?id=${leagueId}`);
+    if (events) results.push(...events);
+    // Pausa entre llamadas para respetar el rate limit de la key gratuita.
+    await sleep(400);
   }
   return results;
 }
@@ -105,8 +138,10 @@ async function ensureFootballSport() {
 
 async function upsertEvent(event: TsdbEvent, sourceId: string, dryRun: boolean) {
   if (!event.strHomeTeam || !event.strAwayTeam || !event.idHomeTeam || !event.idAwayTeam) return "skip";
-  const startsAtRaw = event.strTimestamp ?? (event.dateEvent ? `${event.dateEvent}T${event.strTime ?? "00:00:00"}` : null);
-  if (!startsAtRaw) return "skip";
+  const rawStamp = event.strTimestamp ?? (event.dateEvent ? `${event.dateEvent}T${event.strTime ?? "00:00:00"}` : null);
+  if (!rawStamp) return "skip";
+  // Los timestamps de TheSportsDB vienen en UTC; si no traen zona, la forzamos.
+  const startsAtRaw = /[zZ]|[+-]\d{2}:?\d{2}$/.test(rawStamp) ? rawStamp : `${rawStamp}Z`;
   const startsAt = new Date(startsAtRaw);
   if (Number.isNaN(startsAt.getTime())) return "skip";
 
@@ -140,12 +175,12 @@ async function upsertEvent(event: TsdbEvent, sourceId: string, dryRun: boolean) 
   });
 
   for (const team of [
-    { id: homeId, name: event.strHomeTeam, extId: event.idHomeTeam },
-    { id: awayId, name: event.strAwayTeam, extId: event.idAwayTeam },
+    { id: homeId, name: event.strHomeTeam, extId: event.idHomeTeam, logoUrl: event.strHomeTeamBadge },
+    { id: awayId, name: event.strAwayTeam, extId: event.idAwayTeam, logoUrl: event.strAwayTeamBadge },
   ]) {
     await prisma.participant.upsert({
       where: { id: team.id },
-      update: { name: team.name!, shortName: shortName(team.name!) },
+      update: { name: team.name!, shortName: shortName(team.name!), logoUrl: team.logoUrl ?? null },
       create: {
         id: team.id,
         type: "team",
@@ -154,6 +189,7 @@ async function upsertEvent(event: TsdbEvent, sourceId: string, dryRun: boolean) 
         slug: `thesportsdb-${team.extId}-${slugify(team.name!)}`,
         sportId: "sport-football",
         country: event.strCountry ?? "Chile",
+        logoUrl: team.logoUrl ?? null,
         recentForm: [],
       },
     });
@@ -208,8 +244,12 @@ async function upsertEvent(event: TsdbEvent, sourceId: string, dryRun: boolean) 
 }
 
 async function main() {
-  const leagues = (readArg("leagues") ?? DEFAULT_LEAGUES.join(",")).split(",").map((v) => v.trim()).filter(Boolean);
+  const leaguesArg = readArg("leagues");
+  const leagues = leaguesArg
+    ? leaguesArg.split(",").map((v) => v.trim()).filter(Boolean)
+    : leaguesFromManifest();
   const dryRun = hasFlag("dry-run");
+  console.log(`[thesportsdb] ${leagues.length} ligas a procesar${leaguesArg ? " (override)" : " (manifiesto)"}`);
 
   await prisma.$queryRaw`SELECT 1`;
   if (!dryRun) await ensureFootballSport();

@@ -42,7 +42,7 @@ function RecentResults({ team, align = "left" }: { team: EventInsight["home"]; a
   if (results.length === 0) return null;
 
   return (
-    <div className="mt-4 space-y-1">
+    <div className="mt-3 hidden space-y-1 sm:block">
       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-white/45">
         Ultimos resultados
       </p>
@@ -75,15 +75,15 @@ function TeamBlock({ team, align = "left" }: { team: EventInsight["home"]; align
   const teamContext = team.tablePosition ? `#${team.tablePosition} tabla` : team.country;
 
   return (
-    <div className={`rounded-xl bg-white/10 p-4 ${align === "right" ? "text-right" : ""}`}>
-      <div className={`flex items-center gap-3 ${align === "right" ? "flex-row-reverse" : ""}`}>
-        <TeamCrest team={team} className="h-14 w-14 rounded-xl" />
+    <div className={`rounded-lg bg-white/10 p-3 sm:rounded-xl sm:p-4 ${align === "right" ? "text-right" : ""}`}>
+      <div className={`flex items-center gap-2 sm:gap-3 ${align === "right" ? "flex-row-reverse" : ""}`}>
+        <TeamCrest team={team} className="h-10 w-10 rounded-lg sm:h-14 sm:w-14 sm:rounded-xl" />
         <div className="min-w-0">
-          <p className="truncate text-lg font-black text-white sm:text-2xl">{team.name}</p>
-          {teamContext && <p className="mt-1 text-xs font-bold text-white/65">{teamContext}</p>}
+          <p className="truncate text-sm font-black text-white sm:text-2xl">{team.name}</p>
+          {teamContext && <p className="mt-0.5 truncate text-[11px] font-bold text-white/65 sm:mt-1 sm:text-xs">{teamContext}</p>}
         </div>
       </div>
-      <div className={`mt-4 flex ${align === "right" ? "justify-end" : ""}`}>
+      <div className={`mt-3 flex ${align === "right" ? "justify-end" : ""}`}>
         <FormStrip form={team.form} />
       </div>
       <RecentResults team={team} align={align} />
@@ -103,7 +103,7 @@ export function PredictionProbabilityBar({ analysis }: { analysis: MatchAnalysis
         {draw > 0 && <div className="bg-[#f5b13f]" style={{ width: `${draw}%` }} />}
         <div className="bg-[#4f8cff]" style={{ width: `${away}%` }} />
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-black text-white/75">
+      <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px] font-black text-white/75 sm:mt-3 sm:text-xs">
         <span>Local {home}%</span>
         {draw > 0 ? <span>Empate {draw}%</span> : <span />}
         <span>Visita {away}%</span>
@@ -133,52 +133,56 @@ export function MatchScoreBadge({ analysis }: { analysis: MatchAnalysis }) {
 
 export function MatchHero({ event, analysis }: { event: EventInsight; analysis: MatchAnalysis }) {
   return (
-    <section className="overflow-hidden rounded-xl bg-[#171820] text-white shadow-sm">
-      <div className="bg-[#ff5a00] px-4 py-3 text-xs font-black uppercase tracking-[0.14em]">
+    <section className="overflow-hidden rounded-lg bg-[#171820] text-white shadow-sm sm:rounded-xl">
+      <div className="bg-[#ff5a00] px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] sm:px-4 sm:py-3 sm:text-xs sm:tracking-[0.14em]">
         {[sportLabels[event.sport], event.country, event.league].filter(Boolean).join(" · ")}
       </div>
-      <div className="grid gap-3 p-4 lg:grid-cols-[1fr_1.3fr_1fr]">
-        <TeamBlock team={event.home} />
-        <div className="rounded-xl bg-white p-4 text-[#202128]">
+      <div className="grid grid-cols-2 gap-2 p-2 sm:gap-3 sm:p-4 lg:grid-cols-[1fr_1.3fr_1fr]">
+        <div className="order-2 lg:order-none">
+          <TeamBlock team={event.home} />
+        </div>
+        <div className="order-1 col-span-2 rounded-lg bg-white p-3 text-[#202128] sm:rounded-xl sm:p-4 lg:order-none lg:col-span-1">
           <p className="text-center text-xs font-black uppercase tracking-[0.14em] text-[#ff5a00]">
             {event.round ?? event.league}
           </p>
-          <h1 className="mt-2 text-center text-2xl font-black sm:text-4xl">
+          <h1 className="mt-1 text-center text-[22px] font-black leading-tight sm:mt-2 sm:text-4xl">
             Centro de analisis
           </h1>
-          <p className="mt-2 text-center text-sm font-semibold text-[#6f717c]">
+          <p className="mt-1 text-center text-xs font-semibold leading-5 text-[#6f717c] sm:mt-2 sm:text-sm">
             {formatDateTime(event.startsAt)} · {event.venue} · {event.statusLabel ?? event.status}
           </p>
-          <div className="mt-5 rounded-xl bg-[#171820] p-4">
+          <div className="mt-3 rounded-lg bg-[#171820] p-3 sm:mt-5 sm:rounded-xl sm:p-4">
             <PredictionProbabilityBar analysis={analysis} />
           </div>
           {(hasProjectedScore(analysis) || analysis.confidence > 0) && (
-            <div className="mt-4 grid gap-2 text-center sm:grid-cols-3">
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:mt-4">
               {hasProjectedScore(analysis) && (
-                <div className="rounded-lg bg-[#f4f5f8] p-3">
-                  <p className="text-xs font-bold text-[#6f717c]">Marcador proyectado</p>
-                  <p className="mt-1 text-xl font-black">{analysis.projectedScore.label}</p>
+                <div className="rounded-lg bg-[#f4f5f8] p-2 sm:p-3">
+                  <p className="text-[11px] font-bold leading-tight text-[#6f717c] sm:text-xs">Marcador proyectado</p>
+                  <p className="mt-1 text-lg font-black sm:text-xl">{analysis.projectedScore.label}</p>
                 </div>
               )}
               {analysis.confidence > 0 && (
-                <div className="rounded-lg bg-[#f4f5f8] p-3">
-                  <p className="text-xs font-bold text-[#6f717c]">Confianza</p>
-                  <p className="mt-1 text-xl font-black">{analysis.confidence}%</p>
+                <div className="rounded-lg bg-[#f4f5f8] p-2 sm:p-3">
+                  <p className="text-[11px] font-bold leading-tight text-[#6f717c] sm:text-xs">Confianza</p>
+                  <p className="mt-1 text-lg font-black sm:text-xl">{analysis.confidence}%</p>
                 </div>
               )}
               {analysis.confidence > 0 && (
-                <div className="rounded-lg bg-[#f4f5f8] p-3">
-                  <p className="text-xs font-bold text-[#6f717c]">Riesgo</p>
-                  <p className="mt-1 text-xl font-black">{analysis.riskLevel}</p>
+                <div className="rounded-lg bg-[#f4f5f8] p-2 sm:p-3">
+                  <p className="text-[11px] font-bold leading-tight text-[#6f717c] sm:text-xs">Riesgo</p>
+                  <p className="mt-1 text-lg font-black sm:text-xl">{analysis.riskLevel}</p>
                 </div>
               )}
             </div>
           )}
-          <p className="mt-4 text-center text-xs font-bold text-[#6f717c]">
+          <p className="mt-3 text-center text-[11px] font-bold text-[#6f717c] sm:mt-4 sm:text-xs">
             Modelo actualizado: {formatDateTime(analysis.updatedAt)}
           </p>
         </div>
-        <TeamBlock team={event.away} align="right" />
+        <div className="order-3 lg:order-none">
+          <TeamBlock team={event.away} align="right" />
+        </div>
       </div>
     </section>
   );

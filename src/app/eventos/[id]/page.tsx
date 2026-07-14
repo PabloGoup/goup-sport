@@ -2,16 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EventCard, PageShell, SectionHeader } from "@/components/sports-shell/ui";
 import {
-  ComponentScoreGrid,
   ExpectedStatsTable,
   FeaturedPlayerCards,
   HeadToHeadTimeline,
   HistoricalMetricsTable,
   MatchHero,
-  MatchScoreBadge,
   MatchTabs,
   PredictiveMarketsPanel,
-  PredictionFactors,
   TeamComparisonBars,
 } from "@/components/sports-shell/match-analysis";
 import {
@@ -21,9 +18,7 @@ import {
   AIPredictionFactors,
   PlayerInsights,
   PossibleResultsPanel,
-  StrengthsWeaknesses,
   TeamVisualScore,
-  UncertaintyPanel,
 } from "@/components/sports-shell/ai-analysis";
 import { getEventDetail, getMatchAnalysis } from "@/domain/sports-intelligence/service";
 import { getStoredProviderEventById } from "@/application/sports-intelligence/stored-events";
@@ -35,6 +30,7 @@ import {
   getFootballStatisticalPrediction,
   getFootballHeadToHead,
 } from "@/application/prediction/football-prediction";
+import { getFootballStatMarkets } from "@/application/prediction/team-stat-prediction";
 
 type EventDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -50,9 +46,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const event = detail?.event ?? realEvent;
   if (!event) notFound();
 
-  const prediction = detail?.prediction ?? null;
   const relatedEvents = detail?.relatedEvents ?? [];
-  const [historicalMetrics, featuredPlayers, rawPrediction, headToHead] = await Promise.all([
+  const [historicalMetrics, featuredPlayers, rawPrediction, headToHead, statMarkets] = await Promise.all([
     getFootballHistoricalMetrics(event),
     getFootballFeaturedPlayers(event),
     event.sport === "football"
@@ -64,6 +59,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       : Promise.resolve(null),
     event.sport === "football"
       ? getFootballHeadToHead(event.home.name, event.away.name)
+      : Promise.resolve([]),
+    event.sport === "football"
+      ? getFootballStatMarkets(event.home.name, event.away.name)
       : Promise.resolve([]),
   ]);
 
@@ -92,6 +90,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     featuredPlayers,
     statisticalPrediction,
     headToHead,
+    extraMarkets: statMarkets,
   });
   const aiAnalysis = await getLatestEventAnalysis(event.id);
 
@@ -125,29 +124,18 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const hasPlayers = analysis.featuredPlayers.length > 0;
   const hasHistoricalMetrics = (analysis.historicalMetrics?.length ?? 0) > 0;
   const hasHeadToHead = analysis.headToHead.length > 0;
-  const hasModelFactors =
-    analysis.favorableFactors.length > 0 ||
-    analysis.unfavorableFactors.length > 0 ||
-    analysis.uncertainties.length > 0;
-  const eventDetails = [
-    ["Pais", event.country],
-    ["Liga", event.league],
-    ["Temporada", event.season ? String(event.season) : undefined],
-    ["Sede", event.venue],
-  ].filter((item): item is [string, string] => Boolean(item[1]));
-
   return (
     <PageShell active="/eventos">
       <div className="p-3 sm:p-5">
-        <Link href="/eventos" className="mb-4 inline-block text-sm font-black text-[#ff5a00]">
+        <Link href="/eventos" className="mb-3 inline-block text-sm font-black text-[#ff5a00] sm:mb-4">
           Volver a eventos
         </Link>
 
         <MatchHero event={event} analysis={analysis} />
         <MatchTabs />
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-5">
+        <div className="mt-3 sm:mt-4">
+          <div className="space-y-4 sm:space-y-5">
             {hasAiAnalysis && (
               <section id="analisis-ia" className="scroll-mt-36">
                 <SectionHeader
@@ -160,11 +148,6 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   <AIExplanation analysis={aiAnalysis} />
                   <PossibleResultsPanel analysis={aiAnalysis} results={modelResults} />
                   <AIPredictionFactors analysis={aiAnalysis} />
-                  <StrengthsWeaknesses
-                    analysis={aiAnalysis}
-                    homeName={event.home.name}
-                    awayName={event.away.name}
-                  />
                   <AIObservations analysis={aiAnalysis} />
                   <PlayerInsights analysis={aiAnalysis} />
                   <TeamVisualScore
@@ -172,22 +155,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     homeName={event.home.name}
                     awayName={event.away.name}
                   />
-                  <UncertaintyPanel analysis={aiAnalysis} />
                 </div>
               </section>
             )}
-
-            <section id="resumen" className="scroll-mt-36">
-              <SectionHeader
-                eyebrow="Resumen"
-                title="Respuesta inmediata"
-                description={analysis.headline}
-              />
-              <div className="grid gap-3 lg:grid-cols-[240px_1fr]">
-                <MatchScoreBadge analysis={analysis} />
-                <ComponentScoreGrid analysis={analysis} />
-              </div>
-            </section>
 
             <section id="prediccion" className="scroll-mt-36">
               <SectionHeader
@@ -198,20 +168,20 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <div className="grid gap-3 lg:grid-cols-[1fr_320px]">
                 <div className="rounded-xl bg-white p-4 shadow-sm">
                   <p className="font-black">Distribucion de probabilidades</p>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-lg bg-[#fff0e8] p-4">
+                  <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-4 sm:gap-3">
+                    <div className="rounded-lg bg-[#fff0e8] p-3 sm:p-4">
                       <p className="text-xs font-black text-[#ff5a00]">{event.home.name}</p>
-                      <p className="mt-2 text-3xl font-black">{analysis.probabilities.homeWin}%</p>
+                      <p className="mt-1 text-2xl font-black sm:mt-2 sm:text-3xl">{analysis.probabilities.homeWin}%</p>
                     </div>
                     {analysis.probabilities.draw !== undefined && (
-                      <div className="rounded-lg bg-[#fff7df] p-4">
+                      <div className="rounded-lg bg-[#fff7df] p-3 sm:p-4">
                         <p className="text-xs font-black text-[#b67700]">Empate</p>
-                        <p className="mt-2 text-3xl font-black">{analysis.probabilities.draw}%</p>
+                        <p className="mt-1 text-2xl font-black sm:mt-2 sm:text-3xl">{analysis.probabilities.draw}%</p>
                       </div>
                     )}
-                    <div className="rounded-lg bg-[#eef4ff] p-4">
+                    <div className="rounded-lg bg-[#eef4ff] p-3 sm:p-4">
                       <p className="text-xs font-black text-[#2e6fd1]">{event.away.name}</p>
-                      <p className="mt-2 text-3xl font-black">{analysis.probabilities.awayWin}%</p>
+                      <p className="mt-1 text-2xl font-black sm:mt-2 sm:text-3xl">{analysis.probabilities.awayWin}%</p>
                     </div>
                   </div>
                   {hasSimulation && (
@@ -281,47 +251,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               </section>
             )}
 
-            {hasModelFactors && (
-              <section id="modelos" className="scroll-mt-36">
-                <SectionHeader eyebrow="Modelos" title="Por que el modelo piensa esto" />
-                <PredictionFactors analysis={analysis} />
-              </section>
-            )}
           </div>
-
-          <aside className="space-y-3">
-            <div className="rounded-xl bg-white p-5 shadow-sm">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ff5a00]">
-                Detalles del evento
-              </p>
-              <div className="mt-4 space-y-3">
-                {eventDetails.map(([label, value]) => (
-                  <div key={label} className="rounded-lg bg-[#f5f6f9] p-3">
-                    <p className="text-xs font-black uppercase text-[#8a8d98]">{label}</p>
-                    <p className="mt-1 break-words font-black">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {prediction && (
-              <div id="noticias" className="scroll-mt-36 rounded-xl bg-white p-5 shadow-sm">
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ff5a00]">
-                  Explicacion IA
-                </p>
-                <>
-                  <h2 className="mt-3 text-xl font-black">{prediction.predictedOutcome}</h2>
-                  <p className="mt-2 text-sm font-semibold text-[#6f717c]">
-                    Probabilidad estimada: {Math.round(prediction.probability * 100)}%
-                  </p>
-                </>
-              </div>
-            )}
-          </aside>
         </div>
 
         {relatedEvents.length > 0 && (
-          <section className="mt-5">
+          <section className="mt-4 sm:mt-5">
             <SectionHeader eyebrow="Relacionados" title="Mas eventos del mismo deporte" />
             <div className="grid gap-3 lg:grid-cols-3">
               {relatedEvents.map((related) => (

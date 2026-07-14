@@ -741,6 +741,13 @@ function buildPredictiveMarkets(
         confidence,
       },
       {
+        id: "either-win",
+        group: "Resultado",
+        label: "Cualquiera gana (sin empate)",
+        value: marketPercent(pred.probabilities.homeWin + pred.probabilities.awayWin),
+        confidence,
+      },
+      {
         id: "both-score",
         group: "Goles",
         label: "Ambos equipos marcan",
@@ -769,14 +776,14 @@ function buildPredictiveMarkets(
         detail: `${event.home.shortName} ${pred.lambdaHome.toFixed(2)} · ${event.away.shortName} ${pred.lambdaAway.toFixed(2)}`,
         confidence,
       },
-      ...[0.5, 1.5, 2.5, 3.5].map((line) => ({
+      ...[0.5, 1.5, 2.5, 3.5, 4.5].map((line) => ({
         id: `over-${line}`,
         group: "Goles" as const,
         label: `Mas de ${line} goles`,
         value: marketPercent(1 - poissonCdf(Math.floor(line), totalLambda)),
         confidence,
       })),
-      ...[1.5, 2.5, 3.5, 4.5].map((line) => ({
+      ...[0.5, 1.5, 2.5, 3.5, 4.5].map((line) => ({
         id: `under-${line}`,
         group: "Goles" as const,
         label: `Menos de ${line} goles`,
@@ -784,6 +791,19 @@ function buildPredictiveMarkets(
         confidence,
       })),
     );
+
+    // Marcador mas probable, desde la distribucion del modelo (Dixon-Coles).
+    const topScore = pred.topScorelines[0];
+    if (topScore) {
+      markets.push({
+        id: "most-likely-score",
+        group: "Goles",
+        label: "Marcador mas probable",
+        value: topScore.label,
+        detail: `Probabilidad ${marketPercent(topScore.probability)}`,
+        confidence,
+      });
+    }
   }
 
   const details = payload.apiSportsDetails;
@@ -890,6 +910,7 @@ export function buildExternalDataMatchAnalysis(
     featuredPlayers?: MatchAnalysis["featuredPlayers"];
     statisticalPrediction?: StatisticalPredictionView | null;
     headToHead?: MatchAnalysis["headToHead"];
+    extraMarkets?: PredictiveMarket[];
   } = {},
 ): MatchAnalysis {
   const isFootball = event.sport === "football";
@@ -1065,7 +1086,7 @@ export function buildExternalDataMatchAnalysis(
     headToHead: options.headToHead && options.headToHead.length > 0 ? options.headToHead : timeline,
     featuredPlayers: featuredPlayers.length > 0 ? featuredPlayers : (options.featuredPlayers ?? []),
     historicalMetrics: options.historicalMetrics,
-    predictiveMarkets: buildPredictiveMarkets(event, payload, pred),
+    predictiveMarkets: [...buildPredictiveMarkets(event, payload, pred), ...(options.extraMarkets ?? [])],
   };
 }
 
@@ -1076,6 +1097,7 @@ export function getMatchAnalysis(
     featuredPlayers?: MatchAnalysis["featuredPlayers"];
     statisticalPrediction?: StatisticalPredictionView | null;
     headToHead?: MatchAnalysis["headToHead"];
+    extraMarkets?: PredictiveMarket[];
   } = {},
 ) {
   const mockAnalysis = matchAnalyses.find((analysis) => analysis.eventId === event.id);

@@ -5,6 +5,7 @@ import { useMemo, useSyncExternalStore } from "react";
 import type { EventInsight } from "@/domain/sports-intelligence/types";
 
 const storageKey = "goup-sport:favorites";
+const emptyFavorites: string[] = [];
 let cachedRawFavorites: string | null = null;
 let cachedFavorites: string[] = [];
 
@@ -39,7 +40,7 @@ function subscribe(callback: () => void) {
 }
 
 export function FavoritesPanel({ events }: { events: EventInsight[] }) {
-  const favoriteIds = useSyncExternalStore(subscribe, readFavorites, () => []);
+  const favoriteIds = useSyncExternalStore(subscribe, readFavorites, () => emptyFavorites);
 
   const favorites = useMemo(
     () => favoriteIds.map((id) => events.find((event) => event.id === id)).filter((event): event is EventInsight => Boolean(event)),
