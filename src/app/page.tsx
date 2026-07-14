@@ -188,35 +188,7 @@ export default async function Home() {
               </div>
             </section>
 
-            <section className="rounded-2xl bg-[#0e1f2e] p-4 shadow-[0_14px_36px_rgba(0,0,0,0.2)] ring-1 ring-white/8">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <h2 className="text-xl font-black">Señales del modelo</h2>
-                <Link href="/modelos" className="text-sm font-black text-[#62f4ff]">
-                  Ver modelos
-                </Link>
-              </div>
-              <div className="grid gap-2 lg:grid-cols-4">
-                {topModels.map((prediction) => (
-                  <Link
-                    key={prediction.eventId}
-                    href={`/modelos/${prediction.eventId}`}
-                    className="rounded-xl bg-white/[0.06] p-3 transition hover:bg-white/[0.1]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate font-black">{prediction.predictedOutcome}</p>
-                        <p className="mt-1 truncate text-xs font-semibold text-white/45">
-                          {prediction.event.home.name} vs {prediction.event.away.name}
-                        </p>
-                      </div>
-                      <span className="rounded-md bg-[#ff5a00] px-2 py-1 text-xs font-black">
-                        {prediction.confidence}%
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
+          
           </div>
         </div>
       </div>
