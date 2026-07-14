@@ -50,17 +50,21 @@ const compactCardAccents = [
   "linear-gradient(180deg,rgba(6,19,31,0.18),rgba(6,19,31,0.92)),linear-gradient(115deg,rgba(16,120,104,0.52),transparent 55%)",
 ];
 
+async function loadImportedEvents() {
+  const [storedEvents, calendarEvents] = await Promise.all([
+    listStoredProviderEvents().catch(() => []),
+    listStoredCalendarEvents().catch(() => []),
+  ]);
+
+  return mergeUniqueEvents(calendarEvents, storedEvents);
+}
+
 export default async function Home() {
   const snapshot = getPlatformSnapshot();
-  const [storedEvents, calendarEvents] = await Promise.all([
-    listStoredProviderEvents(),
-    listStoredCalendarEvents(),
-  ]);
-  const importedEvents = mergeUniqueEvents(calendarEvents, storedEvents);
+  const importedEvents = await loadImportedEvents();
   const displayEvents = importedEvents.length > 0 ? importedEvents : snapshot.events;
   const visibleEvents = displayEvents.filter((event) => isProjectedVisibleEvent(event, 7));
   const featuredEvents = visibleEvents.slice(0, 8);
-  const topModels = snapshot.predictions.slice(0, 4);
 
   return (
     <PageShell active="/" searchResults={buildEventSearchResults(visibleEvents)}>

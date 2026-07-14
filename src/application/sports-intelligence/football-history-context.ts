@@ -197,143 +197,147 @@ async function readStatsBombLineup(matchId: string): Promise<StatsBombLineup | n
 export async function getFootballFeaturedPlayers(event: EventInsight): Promise<FeaturedPlayerCard[]> {
   if (event.sport !== "football") return [];
 
-  const prisma = getPrisma();
-  const teamNames = [event.home.name, event.away.name].map(normalizeName);
-  const openFootballMatches = await prisma.event.findMany({
-    where: {
-      sportId: "sport-football",
-      status: "completed",
-      dataSource: {
-        provider: "OpenFootball",
-      },
-    },
-    include: {
-      home: true,
-      away: true,
-    },
-    orderBy: {
-      startsAt: "desc",
-    },
-    take: 200,
-  });
-  const scorers = new Map<string, FeaturedPlayerCard>();
-
-  for (const match of openFootballMatches) {
-    const payload = match.rawPayload as StatsBombEventPayload;
-    const goalGroups = [
-      { team: match.home.name, goals: payload.match?.goals1 ?? [] },
-      { team: match.away.name, goals: payload.match?.goals2 ?? [] },
-    ];
-
-    for (const group of goalGroups) {
-      if (!teamNames.includes(normalizeName(group.team))) continue;
-
-      for (const goal of group.goals) {
-        if (!goal.name) continue;
-
-        const key = `${group.team}-${goal.name}`;
-        const current = scorers.get(key);
-        if (current) {
-          current.score = Math.min(99, current.score + 4);
-          current.form = Math.min(99, current.form + 4);
-          current.projection = `${current.projection} · ${goal.minute ?? "gol"}'`;
-          current.attributes = current.attributes.map((attribute) =>
-            attribute.label === "Impacto" || attribute.label === "Definicion"
-              ? { ...attribute, value: Math.min(99, attribute.value + 5) }
-              : attribute,
-          );
-          continue;
-        }
-
-        scorers.set(key, {
-          id: `openfootball-recent-scorer-${slugId(group.team)}-${slugId(goal.name)}`,
-          name: goal.name,
-          team: group.team,
-          position: "Goleador reciente",
-          nationality: group.team,
-          score: 86,
-          form: 86,
-          projection: goal.minute ? `Gol reciente ${goal.minute}'` : "Gol reciente",
-          attributes: [
-            { label: "Impacto", value: 88 },
-            { label: "Definicion", value: 86 },
-            { label: "Forma", value: 86 },
-            { label: "Actualidad", value: 94 },
-            { label: "Consistencia", value: 80 },
-            { label: "Trazabilidad", value: 92 },
-          ],
-        });
-      }
-    }
-  }
-
-  const recentScorerCards = Array.from(scorers.values())
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 6);
-
-  if (recentScorerCards.length > 0) return recentScorerCards;
-
-  const recentMatches = await prisma.event.findMany({
-    where: {
-      sportId: "sport-football",
-      status: "completed",
-      dataSource: {
-        provider: {
-          in: ["StatsBomb Open Data", "OpenFootball"],
+  try {
+    const prisma = getPrisma();
+    const teamNames = [event.home.name, event.away.name].map(normalizeName);
+    const openFootballMatches = await prisma.event.findMany({
+      where: {
+        sportId: "sport-football",
+        status: "completed",
+        dataSource: {
+          provider: "OpenFootball",
         },
       },
-    },
-    include: {
-      home: true,
-      away: true,
-    },
-    orderBy: {
-      startsAt: "desc",
-    },
-    take: 200,
-  });
+      include: {
+        home: true,
+        away: true,
+      },
+      orderBy: {
+        startsAt: "desc",
+      },
+      take: 200,
+    });
+    const scorers = new Map<string, FeaturedPlayerCard>();
 
-  const cards: FeaturedPlayerCard[] = [];
+    for (const match of openFootballMatches) {
+      const payload = match.rawPayload as StatsBombEventPayload;
+      const goalGroups = [
+        { team: match.home.name, goals: payload.match?.goals1 ?? [] },
+        { team: match.away.name, goals: payload.match?.goals2 ?? [] },
+      ];
 
-  for (const match of recentMatches) {
-    const matchHasParticipant =
-      teamNames.includes(normalizeName(match.home.name)) ||
-      teamNames.includes(normalizeName(match.away.name));
-    if (!matchHasParticipant || !match.externalId) continue;
+      for (const group of goalGroups) {
+        if (!teamNames.includes(normalizeName(group.team))) continue;
 
-    const lineups = await readStatsBombLineup(match.externalId);
-    if (!lineups) continue;
+        for (const goal of group.goals) {
+          if (!goal.name) continue;
 
-    for (const team of lineups) {
-      if (!team.team_name || !teamNames.includes(normalizeName(team.team_name))) continue;
+          const key = `${group.team}-${goal.name}`;
+          const current = scorers.get(key);
+          if (current) {
+            current.score = Math.min(99, current.score + 4);
+            current.form = Math.min(99, current.form + 4);
+            current.projection = `${current.projection} · ${goal.minute ?? "gol"}'`;
+            current.attributes = current.attributes.map((attribute) =>
+              attribute.label === "Impacto" || attribute.label === "Definicion"
+                ? { ...attribute, value: Math.min(99, attribute.value + 5) }
+                : attribute,
+            );
+            continue;
+          }
 
-      for (const player of team.lineup ?? []) {
-        const position = player.positions?.find((item) => item.from === "00:00")?.position ?? player.positions?.[0]?.position;
-        const score = scoreForPosition(position);
-
-        cards.push({
-          id: `statsbomb-player-${player.player_id ?? player.player_name}`,
-          name: player.player_nickname ?? player.player_name ?? "Jugador",
-          team: team.team_name,
-          position: position ?? "Jugador",
-          nationality: player.country?.name ?? team.team_name,
-          score,
-          form: score,
-          projection: "Historial StatsBomb",
-          attributes: [
-            { label: "Impacto", value: score },
-            { label: "Forma", value: score - 2 },
-            { label: "Consistencia", value: score - 4 },
-            { label: "Influencia", value: score - 1 },
-            { label: "Disponibilidad", value: 90 },
-            { label: "Trazabilidad", value: 88 },
-          ],
-        });
-
-        if (cards.length >= 4) return cards;
+          scorers.set(key, {
+            id: `openfootball-recent-scorer-${slugId(group.team)}-${slugId(goal.name)}`,
+            name: goal.name,
+            team: group.team,
+            position: "Goleador reciente",
+            nationality: group.team,
+            score: 86,
+            form: 86,
+            projection: goal.minute ? `Gol reciente ${goal.minute}'` : "Gol reciente",
+            attributes: [
+              { label: "Impacto", value: 88 },
+              { label: "Definicion", value: 86 },
+              { label: "Forma", value: 86 },
+              { label: "Actualidad", value: 94 },
+              { label: "Consistencia", value: 80 },
+              { label: "Trazabilidad", value: 92 },
+            ],
+          });
+        }
       }
     }
-  }
 
-  return cards;
+    const recentScorerCards = Array.from(scorers.values())
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+
+    if (recentScorerCards.length > 0) return recentScorerCards;
+
+    const recentMatches = await prisma.event.findMany({
+      where: {
+        sportId: "sport-football",
+        status: "completed",
+        dataSource: {
+          provider: {
+            in: ["StatsBomb Open Data", "OpenFootball"],
+          },
+        },
+      },
+      include: {
+        home: true,
+        away: true,
+      },
+      orderBy: {
+        startsAt: "desc",
+      },
+      take: 200,
+    });
+
+    const cards: FeaturedPlayerCard[] = [];
+
+    for (const match of recentMatches) {
+      const matchHasParticipant =
+        teamNames.includes(normalizeName(match.home.name)) ||
+        teamNames.includes(normalizeName(match.away.name));
+      if (!matchHasParticipant || !match.externalId) continue;
+
+      const lineups = await readStatsBombLineup(match.externalId);
+      if (!lineups) continue;
+
+      for (const team of lineups) {
+        if (!team.team_name || !teamNames.includes(normalizeName(team.team_name))) continue;
+
+        for (const player of team.lineup ?? []) {
+          const position = player.positions?.find((item) => item.from === "00:00")?.position ?? player.positions?.[0]?.position;
+          const score = scoreForPosition(position);
+
+          cards.push({
+            id: `statsbomb-player-${player.player_id ?? player.player_name}`,
+            name: player.player_nickname ?? player.player_name ?? "Jugador",
+            team: team.team_name,
+            position: position ?? "Jugador",
+            nationality: player.country?.name ?? team.team_name,
+            score,
+            form: score,
+            projection: "Historial StatsBomb",
+            attributes: [
+              { label: "Impacto", value: score },
+              { label: "Forma", value: score - 2 },
+              { label: "Consistencia", value: score - 4 },
+              { label: "Influencia", value: score - 1 },
+              { label: "Disponibilidad", value: 90 },
+              { label: "Trazabilidad", value: 88 },
+            ],
+          });
+
+          if (cards.length >= 4) return cards;
+        }
+      }
+    }
+
+    return cards;
+  } catch {
+    return [];
+  }
 }

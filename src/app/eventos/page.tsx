@@ -44,6 +44,15 @@ function buildEventSearchResults(events: EventInsight[]): SearchResult[] {
   }));
 }
 
+async function loadPersistedEvents(sport?: EventInsight["sport"]) {
+  const [storedEvents, calendarEvents] = await Promise.all([
+    listStoredProviderEvents({ sport }).catch(() => []),
+    listStoredCalendarEvents({ sport }).catch(() => []),
+  ]);
+
+  return mergeUniqueEvents(calendarEvents, storedEvents);
+}
+
 type EventsPageProps = {
   searchParams: Promise<{
     sport?: string;
@@ -66,18 +75,13 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       : undefined;
   const country = filters.country;
   const league = filters.league;
-  const [storedEvents, calendarEvents] = await Promise.all([
-    listStoredProviderEvents({ sport }),
-    listStoredCalendarEvents({ sport }),
+  const [persistedEvents, availablePersistedEvents] = await Promise.all([
+    loadPersistedEvents(sport),
+    loadPersistedEvents(),
   ]);
-  const persistedEvents = mergeUniqueEvents(calendarEvents, storedEvents);
   const fallbackEvents = listEvents({ sport, status, sort, minConfidence });
   const allEvents = (persistedEvents.length > 0 ? persistedEvents : fallbackEvents).filter((event) =>
     isProjectedVisibleEvent(event, 7),
-  );
-  const availablePersistedEvents = mergeUniqueEvents(
-    await listStoredCalendarEvents(),
-    await listStoredProviderEvents(),
   );
   const availableEvents = (availablePersistedEvents.length > 0 ? availablePersistedEvents : listEvents()).filter((event) =>
     isProjectedVisibleEvent(event, 7),
