@@ -1,4 +1,4 @@
-export const FOOTBALL_MODEL_VERSION = "goup-poisson-football-0.2.0";
+export const FOOTBALL_MODEL_VERSION = "goup-poisson-dc-football-0.3.0";
 
 /** Resultado de un partido completado, desde la perspectiva de la liga. */
 export type CompletedMatch = {
@@ -219,8 +219,27 @@ function mean(values: number[]): number {
 }
 
 /**
- * Predice un partido con Poisson independiente. Venue neutro por defecto
- * (sin ventaja de local), apropiado para torneos como el Mundial.
+ * Correccion de Dixon-Coles: el Poisson independiente subestima la correlacion
+ * en marcadores bajos (empuja masa hacia 0-0/1-1 y la quita de 1-0/0-1). rho<0
+ * aumenta empates cerrados, mas realista que el Poisson puro.
+ */
+export function dixonColesTau(
+  homeGoals: number,
+  awayGoals: number,
+  lambdaHome: number,
+  lambdaAway: number,
+  rho: number,
+): number {
+  if (homeGoals === 0 && awayGoals === 0) return 1 - lambdaHome * lambdaAway * rho;
+  if (homeGoals === 0 && awayGoals === 1) return 1 + lambdaHome * rho;
+  if (homeGoals === 1 && awayGoals === 0) return 1 + lambdaAway * rho;
+  if (homeGoals === 1 && awayGoals === 1) return 1 - rho;
+  return 1;
+}
+
+/**
+ * Predice un partido con Poisson + correccion de Dixon-Coles. Venue neutro por
+ * defecto (sin ventaja de local), apropiado para torneos como el Mundial.
  * Devuelve null si falta fuerza para alguno de los equipos.
  */
 export function predictFootballMatch(
@@ -228,7 +247,7 @@ export function predictFootballMatch(
   awayTeam: string,
   strengths: Map<string, TeamStrength>,
   leagueAverageGoals: number,
-  options: { homeAdvantage?: number; maxGoals?: number } = {},
+  options: { homeAdvantage?: number; maxGoals?: number; rho?: number } = {},
 ): PoissonPrediction | null {
   const home = strengths.get(homeTeam);
   const away = strengths.get(awayTeam);
@@ -236,6 +255,7 @@ export function predictFootballMatch(
 
   const homeAdvantage = options.homeAdvantage ?? 1;
   const maxGoals = options.maxGoals ?? 8;
+  const rho = options.rho ?? -0.1;
 
   const lambdaHome = clamp(home.attack * away.defense * leagueAverageGoals * homeAdvantage, 0.05, 8);
   const lambdaAway = clamp(away.attack * home.defense * leagueAverageGoals, 0.05, 8);
@@ -248,7 +268,8 @@ export function predictFootballMatch(
   for (let h = 0; h <= maxGoals; h += 1) {
     const ph = poissonProbability(h, lambdaHome);
     for (let a = 0; a <= maxGoals; a += 1) {
-      const probability = ph * poissonProbability(a, lambdaAway);
+      const tau = dixonColesTau(h, a, lambdaHome, lambdaAway, rho);
+      const probability = Math.max(0, ph * poissonProbability(a, lambdaAway) * tau);
       if (h > a) homeWin += probability;
       else if (h === a) draw += probability;
       else awayWin += probability;

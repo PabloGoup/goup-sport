@@ -624,6 +624,12 @@ export type StatisticalPredictionView = {
   topScorelines: Array<{ label: string; probability: number }>;
   confidence: number;
   caveats: string[];
+  simulation?: {
+    iterations: number;
+    homeWins: number;
+    draws: number;
+    awayWins: number;
+  };
 };
 
 function factorial(n: number): number {
@@ -982,10 +988,16 @@ export function buildExternalDataMatchAnalysis(
     ],
     scorelines: modelScorelines,
     simulations: {
-      total: 0,
-      homeWins: pred ? pct(pred.probabilities.homeWin) : 0,
-      draws: isFootball ? (pred ? pct(pred.probabilities.draw) : 0) : undefined,
-      awayWins: pred ? pct(pred.probabilities.awayWin) : 0,
+      total: pred?.simulation ? pred.simulation.iterations : 0,
+      homeWins: pred?.simulation ? pred.simulation.homeWins : pred ? pct(pred.probabilities.homeWin) : 0,
+      draws: isFootball
+        ? pred?.simulation
+          ? pred.simulation.draws
+          : pred
+            ? pct(pred.probabilities.draw)
+            : 0
+        : undefined,
+      awayWins: pred?.simulation ? pred.simulation.awayWins : pred ? pct(pred.probabilities.awayWin) : 0,
     },
     teamComparison: buildTeamComparisonFromStats(event, payload),
     expectedStats,

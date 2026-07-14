@@ -135,7 +135,7 @@ export async function getFootballRecentResults(
   client?: ReturnType<typeof getPrisma>,
 ) {
   const limit = options.limit ?? 5;
-  const providers = options.providers ?? ["OpenFootball", "StatsBomb Open Data"];
+  const providers = options.providers ?? ["OpenFootball", "StatsBomb Open Data", "TheSportsDB"];
   const prisma = client ?? getPrisma();
   const events = await prisma.event.findMany({
     where: {
@@ -169,7 +169,7 @@ export function recentFormProvidersForEvent(event: EventInsight) {
     return ["OpenFootball"];
   }
 
-  return ["OpenFootball", "StatsBomb Open Data"];
+  return ["OpenFootball", "StatsBomb Open Data", "TheSportsDB"];
 }
 
 function scoreForPosition(position?: string) {

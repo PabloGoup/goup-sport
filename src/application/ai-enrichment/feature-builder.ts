@@ -52,7 +52,7 @@ function recentFormProviders(event: EventWithRelations): string[] {
   ) {
     return ["OpenFootball"];
   }
-  return ["OpenFootball", "StatsBomb Open Data"];
+  return ["OpenFootball", "StatsBomb Open Data", "TheSportsDB"];
 }
 
 async function loadAggregates(

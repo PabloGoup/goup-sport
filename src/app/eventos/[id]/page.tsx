@@ -78,6 +78,12 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         topScorelines: rawPrediction.topScorelines,
         confidence: rawPrediction.confidence,
         caveats: rawPrediction.caveats,
+        simulation: {
+          iterations: rawPrediction.simulation.iterations,
+          homeWins: rawPrediction.simulation.homeWins,
+          draws: rawPrediction.simulation.draws,
+          awayWins: rawPrediction.simulation.awayWins,
+        },
       }
     : null;
 
